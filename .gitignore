@@ -69,3 +69,6 @@ target/
 
 # for autoenv
 .env
+
+# for not storing text files
+*.txt
