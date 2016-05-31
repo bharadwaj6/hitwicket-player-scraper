@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = 'to search through player profiles and store all in db'
 
     def handle(self, *args, **options):
-        default_start = 9027387
+        default_start = 9029360
         default_end = 13000000
 
         player_url = "http://hitwicket.com/player/show/"
