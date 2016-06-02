@@ -7,51 +7,39 @@ import requests
 from models import PlayerDetails, DivTeamDetails
 
 
-def save_player_details(html_content, player_id):
+def save_player_details(html_content, player_id, team_id):
     """To save player details given the player_id."""
     soup = BeautifulSoup(html_content, 'html.parser')
 
     exp, form, fitness, _skill_index, _salary, region = [x.text for x in soup.find_all('div', class_='level')]
-
-    skill_index = int(re.search(r'\d*\,\d*', _skill_index).group().replace(',', ''))
+    skill_index = int(re.search(r'\S+', _skill_index).group().replace(',', ''))
     salary = int(_salary.replace(',', ''))
 
     try:
-        PlayerDetails.objects.get(player_id=player_id)
+        if team_id:
+            PlayerDetails.objects.get(player_id=player_id, team_id=team_id)
+        else:
+            PlayerDetails.objects.get(player_id=player_id)
     except:
-        PlayerDetails.objects.create(
-            player_id=player_id,
-            form=form,
-            fitness=fitness,
-            skill_index=skill_index,
-            salary=salary,
-            region=region
-        )
-
-
-def save_player_team_details(html_content, team_id):
-    """To save player details given the team_id.
-
-    Used while scraping whole divisions/ leagues.
-    """
-    soup = BeautifulSoup(html_content, 'html.parser')
-
-    exp, form, fitness, _skill_index, _salary, region = [x.text for x in soup.find_all('div', class_='level')]
-
-    skill_index = int(re.search(r'\d*\,\d*', _skill_index).group().replace(',', ''))
-    salary = int(_salary.replace(',', ''))
-
-    try:
-        PlayerDetails.objects.get(team_id=team_id)
-    except:
-        PlayerDetails.objects.create(
-            form=form,
-            fitness=fitness,
-            skill_index=skill_index,
-            salary=salary,
-            region=region,
-            team_id=team_id
-        )
+        if team_id:
+            PlayerDetails.objects.create(
+                player_id=player_id,
+                form=form,
+                fitness=fitness,
+                skill_index=skill_index,
+                salary=salary,
+                region=region,
+                team_id=team_id
+            )
+        else:
+            PlayerDetails.objects.create(
+                player_id=player_id,
+                form=form,
+                fitness=fitness,
+                skill_index=skill_index,
+                salary=salary,
+                region=region
+            )
 
 
 def save_div_team_details(league_team_ids, league_id, div_id):
@@ -91,13 +79,16 @@ def get_div_team_ids(div_id):
         print "currently fetching teams from league: {}-{}".format(div_roman[div_id], league_id)
         current_league_url = league_url.format(div_roman[div_id], league_id)
         resp = requests.get(current_league_url)
-        league_soup = BeautifulSoup(resp, 'html.parser')
-        league_team_ids = teamids_from_league(league_soup)
+        if resp.status_code == 200:
+            league_soup = BeautifulSoup(resp.content, 'html.parser')
+            league_team_ids = teamids_from_league(league_soup)
 
-        # store the league_team_ids and league, div relns in db
-        save_div_team_details(league_team_ids, league_id, div_id)
+            # store the league_team_ids and league, div relns in db
+            save_div_team_details(league_team_ids, league_id, div_id)
 
-        all_teams += league_team_ids
+            all_teams += league_team_ids
+        else:
+            print "request to league url failed: ", current_league_url
 
     print "fetched all team id details for div ", div_id
     print all_teams

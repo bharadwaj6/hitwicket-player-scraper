@@ -8,7 +8,7 @@ class PlayerDetails(models.Model):
 
     age = models.CharField(null=True, max_length=12)
     name = models.CharField(null=True, max_length=1024)
-    player_id = models.IntegerField()
+    player_id = models.IntegerField(null=True)
     region = models.CharField(max_length=255)
     skill_index = models.IntegerField()
     exp = models.CharField(max_length=255)
