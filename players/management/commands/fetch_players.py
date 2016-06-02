@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from players.helpers import save_player_details
 
 NO_OF_REQUESTS = 2000
+REQUEST_TIMEOUT = 30
 
 class Command(BaseCommand):
     args = ''
@@ -31,7 +32,7 @@ class Command(BaseCommand):
             print "inside loop... current_start: {} current_end: {}".format(current_start, current_end)
             req_list = []
             for player_id in xrange(current_start, current_end):
-                current_req = grequests.get(player_url + str(player_id))
+                current_req = grequests.get(player_url + str(player_id), timeout=REQUEST_TIMEOUT)
                 req_list.append(current_req)
 
             print "requests are being sent now.. please wait..."
