@@ -7,6 +7,7 @@ import requests
 
 from django.core.management.base import BaseCommand
 
+from players.models import PlayerDetails
 from players.helpers import save_player_details, get_div_team_ids, get_player_links_from_team
 
 NO_OF_REQUESTS = 2000
@@ -20,13 +21,18 @@ class Command(BaseCommand):
     help = 'to search through player profiles and store all in db'
 
     def handle(self, *args, **options):
-        """The actual script."""
+        """The actual script. Comment below line if you want to run with input."""
         # div_id = input("Enter the division you want to search in: ")
-        rest_divs = [7, 8]
-        for div_id in rest_divs:
+        failed_divs = [7]
+        for div_id in failed_divs:
             team_ids = get_div_team_ids(div_id)
             team_url = "http://hitwicket.com/players/index/"
             for team_id in team_ids:
+
+                # don't scrape if some player details have been scraped already
+                if PlayerDetails.objects.filter(team_id=team_id).exists():
+                    continue
+
                 current_team_players_url = team_url + str(team_id)
                 print "sending request to team players url: ", current_team_players_url
 

@@ -71,6 +71,10 @@ def get_div_team_ids(div_id):
     if div_id not in range(1, 9):
         return "Wrong div id entered"
 
+    # if it has been scraped already, just fetch teams from db
+    if DivTeamDetails.objects.filter(div_id=div_id).exists():
+        return [int(x[0]) for x in DivTeamDetails.objects.filter(div_id=div_id).values_list('team_id')]
+
     total_leagues = 4 ** (div_id - 1)
     league_url = "http://hitwicket.com/league/show/{}-{}"
     div_roman = {1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII'}
