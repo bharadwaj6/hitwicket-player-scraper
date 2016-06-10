@@ -6,6 +6,7 @@ import requests
 
 from models import PlayerDetails, DivTeamDetails
 
+from bulk_update.helper import bulk_update
 
 def save_player_details(html_content, player_id, team_id):
     """To save player details given the player_id."""
@@ -131,3 +132,23 @@ def get_player_links_from_team(team_player_soup):
         current = link.get('href')
         all_links.append(current)
     return all_links
+
+
+def save_player_type_details(responses, player_ids):
+    if len(responses) != len(player_ids):
+        raise Exception("Something is wrong, no of players given doesn't really match the other details length...")
+
+    player_details = []
+    players = PlayerDetails.objects.filter(player_id__in=player_ids)
+    for player in players:
+        player_index = player_ids.index(player.player_id)
+        player_res = responses[player_index]
+        if player_res is not None and player_res.status_code < 400:
+            soup = BeautifulSoup(player_res.content, 'html.parser')
+            major_skill = soup.find_all('div', class_='major_style')[0].text
+            minor_skill = soup.find_all('div', class_='minor_style')[0].text
+
+            player.major_skill = major_skill
+            player.minor_skill = minor_skill
+
+    bulk_update(players, update_fields=['major_skill', 'minor_skill'])

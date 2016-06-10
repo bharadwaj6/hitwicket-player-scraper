@@ -18,9 +18,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Handle only Telangana players here."""
-        tlg_players = PlayerDetails.objects.filter(region='Telangana')
+        tlg_players = PlayerDetails.objects.filter(region='Telangana', skill_index__gte=70000)
         player_ids = [x.player_id for x in tlg_players]
-        skill_index_list = [x.skill_index for x in tlg_players]
         max_index = len(player_ids) - 1
 
         current_index = 0
@@ -48,6 +47,5 @@ class Command(BaseCommand):
             responses = grequests.map(req_list)
             save_player_type_details(
                 responses,
-                player_ids[current_index:max_index],
-                skill_index_list[current_index:max_index]
+                player_ids[current_index:max_index]
             )

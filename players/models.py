@@ -16,10 +16,12 @@ class PlayerDetails(models.Model):
     fitness = models.CharField(max_length=255)
     salary = models.IntegerField()
     team_id = models.IntegerField(null=True)
+    major_skill = models.CharField(null=True, max_length=255)
+    minor_skill = models.CharField(null=True, max_length=255)
 
     def get_player_url(self):
         """Get player_url from player_id in details."""
-        pass
+        return "http://hitwicket.com/player/show/" + str(self.player_id)
 
 
 class DivTeamDetails(models.Model):
